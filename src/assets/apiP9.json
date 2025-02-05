@@ -1,0 +1,191 @@
+[
+  {
+    "category": "Costura",
+    "description": "Aprende los fundamentos de la costura.",
+    "duration": "8 horas",
+    "id": "0",
+    "image": "https://i.ytimg.com/vi/1H8ZoGSE4bY/hqdefault.jpg?sqp=-oaymwEXCNACELwBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLAXZOVI0IdaJRclZd-MGww-fnGi-g",
+    "instructor": "Luis Martínez",
+    "level": "Básico",
+    "likes": 120,
+    "price": 19.99,
+    "purchased": false,
+    "reviews": [
+      {
+        "comment": "Muy interesante y fácil de seguir.",
+        "rating": 5,
+        "user": "Ana"
+      }
+    ],
+    "title": "Curso Básico de Costura",
+    "url": "https://www.youtube.com/playlist?list=PLw3xpQ527lU0Lo_ZD5N_W102p9ZxeNzQq"
+  },
+  {
+    "category": "Costura",
+    "description": "Domina técnicas avanzadas y mejora tus habilidades de costura.",
+    "duration": "12 horas",
+    "id": "1",
+    "image": "https://i.ytimg.com/vi/ma-gDoTUHGw/hqdefault.jpg?sqp=-oaymwEXCNACELwBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLA27nPcuCrXUThPUedMdUmnGcrIRQ",
+    "instructor": "María López",
+    "level": "Avanzado",
+    "likes": 95,
+    "price": 29.99,
+    "purchased": false,
+    "reviews": [
+      {
+        "comment": "Un poco avanzado, pero excelente contenido.",
+        "rating": 4,
+        "user": "Carlos"
+      }
+    ],
+    "title": "Técnicas Avanzadas de Costura",
+    "url": "https://www.youtube.com/playlist?list=PLw3xpQ527lU2rmFT8k2ULrHSjJXVy8Xxw"
+  },
+  {
+    "category": "Música",
+    "description": "Aprende a coser desde cero con este curso práctico.",
+    "duration": "10 horas",
+    "id": "2",
+    "image": "https://i.ytimg.com/vi/-WKUvE2GAZA/hqdefault.jpg?sqp=-oaymwEXCNACELwBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLCmnj0p7nN6WCagmWg7VvT7Vo50lg",
+    "instructor": "Sofía Gómez",
+    "level": "Básico",
+    "likes": 80,
+    "price": 15.99,
+    "purchased": false,
+    "reviews": [
+      {
+        "comment": "Perfecto para principiantes, me encantó.",
+        "rating": 5,
+        "user": "Lucía"
+      }
+    ],
+    "title": "Curso de Música Básico",
+    "url": "https://www.youtube.com/playlist?list=PLE9GU8FRiaIwtaXK5R-z2wwwjMAU7sl_d"
+  },
+  {
+    "category": "Música",
+    "description": "Descubre técnicas avanzadas de musicología para perfeccionar tus proyectos.",
+    "duration": "14 horas",
+    "id": "3",
+    "image": "https://i.ytimg.com/vi/Gok0KDwunoM/hqdefault.jpg?sqp=-oaymwEXCNACELwBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLAiNNjVbS6YSQEAZT1LuY2CWLNfLQ",
+    "instructor": "Pedro Sánchez",
+    "level": "Avanzado",
+    "likes": 65,
+    "price": 25.99,
+    "purchased": false,
+    "reviews": [
+      {
+        "comment": "Muy útil para mejorar habilidades.",
+        "rating": 4,
+        "user": "Elena"
+      }
+    ],
+    "title": "Música para Avanzados",
+    "url": "https://www.youtube.com/playlist?list=PLE9GU8FRiaIzHPVOpcHDK8q_2JaaZON0v"
+  },
+  {
+    "category": "3D Modeling",
+    "description": "Introducción al modelado 3D con herramientas modernas.",
+    "duration": "15 horas",
+    "id": "4",
+    "image": "https://i.ytimg.com/vi/nIoXOplUvAw/hqdefault.jpg?sqp=-oaymwEXCNACELwBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLAtpFd6tuuocCY4LXyPVq-FDLR5Lw",
+    "instructor": "David Torres",
+    "level": "Básico",
+    "likes": 150,
+    "price": 39.99,
+    "purchased": false,
+    "reviews": [
+      {
+        "comment": "Excelente introducción al modelado 3D.",
+        "rating": 5,
+        "user": "Pablo"
+      }
+    ],
+    "title": "Modelado 3D Básico",
+    "url": "https://www.youtube.com/playlist?list=PLjEaoINr3zgFX8ZsChQVQsuDSjEqdWMAD"
+  },
+  {
+    "category": "3D Modeling",
+    "description": "Perfecciona tus habilidades en modelado 3D y crea proyectos complejos.",
+    "duration": "20 horas",
+    "id": "5",
+    "image": "https://i.ytimg.com/vi/Hf2esGA7vCc/hqdefault.jpg?sqp=-oaymwEXCNACELwBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLDg6dVePlLqL1HkHQ5RiD0sW2fuZQ",
+    "instructor": "Carla Romero",
+    "level": "Avanzado",
+    "likes": 140,
+    "price": 49.99,
+    "purchased": false,
+    "reviews": [
+      {
+        "comment": "Muy completo, aunque algo técnico.",
+        "rating": 4,
+        "user": "Roberto"
+      }
+    ],
+    "title": "Modelado 3D Avanzado",
+    "url": "https://www.youtube.com/playlist?list=PLjEaoINr3zgEL9UjPTLWQhLFAK7wVaRMR"
+  },
+  {
+    "category": "Arte",
+    "description": "Explora las bases del arte digital y empieza a crear.",
+    "duration": "8 horas",
+    "id": "6",
+    "image": "https://i.ytimg.com/vi/HTEvsbge9nE/hqdefault.jpg?sqp=-oaymwEXCNACELwBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLCdGp5xeLGi9T-GN9fV_hWbCED_BQ",
+    "instructor": "Clara García",
+    "level": "Básico",
+    "likes": 110,
+    "price": 19.99,
+    "purchased": false,
+    "reviews": [
+      {
+        "comment": "Inspirador y fácil de seguir.",
+        "rating": 5,
+        "user": "Laura"
+      }
+    ],
+    "title": "Arte Digital para Principiantes",
+    "url": "https://www.youtube.com/playlist?list=PLMXbAPr21di9nmPb0-72_avg9QhiPUHyg"
+  },
+  {
+    "category": "Arte",
+    "description": "Domina técnicas avanzadas para crear arte digital impresionante.",
+    "duration": "12 horas",
+    "id": "7",
+    "image": "https://i.ytimg.com/vi/7NbrtDLEBoc/hqdefault.jpg?sqp=-oaymwEXCNACELwBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLAIe0E9yE3KvidR_LTUp5raLR4XbQ",
+    "instructor": "Fernando Díaz",
+    "level": "Avanzado",
+    "likes": 95,
+    "price": 29.99,
+    "purchased": false,
+    "reviews": [
+      {
+        "comment": "Muy buen curso, aunque algo avanzado.",
+        "rating": 4,
+        "user": "Diego"
+      }
+    ],
+    "title": "Técnicas Avanzadas de Arte Digital",
+    "url": "https://www.youtube.com/playlist?list=PLMXbAPr21di_-1K8CMTAdIUZ-qhxwZwgS"
+  },
+  {
+    "category": "Arte",
+    "description": "Aprende las bases del dibujo y mejora tus habilidades artísticas.",
+    "duration": "10 horas",
+    "id": "8",
+    "image": "https://i.ytimg.com/vi/Vtd6uwNFl9k/hqdefault.jpg?sqp=-oaymwEXCNACELwBSFryq4qpAwkIARUAAIhCGAE=&rs=AOn4CLBNWXZsHr-i1HMDLqeIes4oZPinSw",
+    "instructor": "Isabel Núñez",
+    "level": "Básico",
+    "likes": 130,
+    "price": 14.99,
+    "purchased": false,
+    "reviews": [
+      {
+        "comment": "Excelente para principiantes.",
+        "rating": 5,
+        "user": "Alberto"
+      }
+    ],
+    "title": "Fundamentos del Dibujo",
+    "url": "https://www.youtube.com/playlist?list=PLMXbAPr21di-Ox-dmDwL2riWedei1dn9S"
+  }
+]

@@ -1,0 +1,187 @@
+---
+// src/pages/posts/[id].astro
+import Layout from "../../layouts/Layout.astro";
+import { getDatabase, ref, child, get } from "firebase/database";
+import database from "../../../firebaseConfig";
+import Header from "../../components/Header";
+import CourseDialog from "../../components/CourseDialog.jsx";
+import LikeButton from "../../components/LikeButton.jsx";
+import AddToCartButton from "../../components/AddToCart.jsx";
+
+// 1. Generar rutas estáticas
+export async function getStaticPaths() {
+  const dbRef = ref(database);
+  const snapshot = await get(child(dbRef, "/"));
+  const courses = snapshot.val() || {};
+
+  return Object.keys(courses).map((id) => ({
+    params: { id },
+    props: {
+      course: {
+        ...courses[id],
+        id,
+      },
+    },
+  }));
+}
+
+// 2. Tipos TypeScript
+interface Review {
+  user: string;
+  rating: number;
+  comment: string;
+}
+
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  category: string;
+  price: number;
+  duration: string;
+  level: string;
+  instructor: string;
+  url: string;
+  reviews: Review[];
+  likes: number;
+}
+
+// 3. Obtener datos del curso
+const { id } = Astro.params;
+const { course } = Astro.props;
+
+// 4. Función de respaldo para SSR
+async function fetchCourse(): Promise<Course | null> {
+  const snapshot = await get(child(ref(database), `/${id}`));
+  return snapshot.exists() ? { id, ...snapshot.val() } : null;
+}
+
+// 5. Cargar datos si no vienen pre-renderizados
+const courseData = course || (await fetchCourse());
+---
+
+<Layout title={courseData?.title || "Detalle del curso"}>
+  <Header client:load />
+  {
+    courseData ? (
+      <div class="max-w-6xl mx-auto px-4 py-8">
+        <article class="bg-white rounded-xl shadow-lg p-8">
+          <div class="flex flex-col md:flex-row gap-8">
+            {/* Sección de imagen y botones */}
+            <div class="md:w-1/3 flex flex-col gap-6">
+              <div class="relative aspect-video overflow-hidden rounded-xl shadow-md">
+                <img
+                  src={courseData.image}
+                  alt={`Portada del curso ${courseData.title}`}
+                  class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+
+              <div class="flex flex-col gap-4">
+                {/* Botones alineados */}
+                <CourseDialog client:load courseId={courseData.id} />
+                <AddToCartButton client:load course={courseData} />
+              </div>
+
+              <div class="bg-gray-50 p-4 rounded-lg text-center">
+                <p class="text-sm text-gray-500">Valoración promedio</p>
+                <p class="text-2xl font-bold text-yellow-500">
+                  {courseData.reviews.length > 0
+                    ? (
+                        courseData.reviews.reduce(
+                          (acc: number, review: Review) =>
+                            acc + review.rating,
+                          0
+                        ) / courseData.reviews.length
+                      ).toFixed(1)
+                    : "0.0"}
+                  /5
+                </p>
+              </div>
+            </div>
+
+            {/* Contenido principal */}
+            <div class="md:w-2/3 space-y-6">
+              <header>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                  {courseData.title}
+                </h1>
+                <div class="flex flex-wrap gap-2 mb-4">
+                  <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                    {courseData.category}
+                  </span>
+                  <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                    {courseData.level}
+                  </span>
+                </div>
+                <p class="text-gray-600 text-lg leading-relaxed">
+                  {courseData.description}
+                </p>
+              </header>
+
+              {/* Detalles del curso */}
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <p class="text-sm text-gray-500">Duración</p>
+                  <p class="font-medium text-gray-800">{courseData.duration}</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <p class="text-sm text-gray-500">Precio</p>
+                  <p class="font-medium text-gray-800">
+                    {courseData.price.toFixed(2)}€
+                  </p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <p class="text-sm text-gray-500">Instructor</p>
+                  <p class="font-medium text-gray-800">
+                    {courseData.instructor}
+                  </p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg flex justify-center">
+                  <LikeButton client:load courseId={courseData.id} />
+                </div>
+              </div>
+
+              {/* Reseñas */}
+              <section>
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                  Reseñas ({courseData.reviews.length})
+                </h2>
+                <div class="space-y-4">
+                  {courseData.reviews?.map((review: Review, index: number) => (
+                    <div key={index} class="bg-gray-50 p-4 rounded-lg">
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                          <span class="font-medium text-gray-800">
+                            {review.user}
+                          </span>
+                          <span class="text-yellow-500 text-sm">
+                            {"★".repeat(review.rating)}
+                          </span>
+                        </div>
+                        <span class="text-sm text-gray-500">
+                          {new Date().toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p class="text-gray-600">{review.comment}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </div>
+        </article>
+      </div>
+    ) : (
+      <div class="text-center py-20">
+        <h1 class="text-2xl font-bold text-red-500">Curso no encontrado</h1>
+        <p class="text-gray-600 mt-4">
+          El curso solicitado no existe o fue eliminado
+        </p>
+      </div>
+    )
+  }
+</Layout>
