@@ -14,15 +14,26 @@ export async function getStaticPaths() {
   const snapshot = await get(child(dbRef, "/"));
   const courses = snapshot.val() || {};
 
-  return Object.keys(courses).map((id) => ({
-    params: { id },
-    props: {
-      course: {
-        ...courses[id],
-        id,
+  // Filtrar solo IDs válidos (excluir claves como "users")
+  return Object.keys(courses)
+    .filter((id) => {
+      const course = courses[id];
+      return (
+        typeof course === "object" &&
+        course !== null &&
+        typeof course.title === "string" &&
+        typeof course.price === "number"
+      );
+    })
+    .map((id) => ({
+      params: { id },
+      props: {
+        course: {
+          ...courses[id],
+          id,
+        },
       },
-    },
-  }));
+    }));
 }
 
 // 2. Tipos TypeScript
@@ -31,7 +42,6 @@ interface Review {
   rating: number;
   comment: string;
 }
-
 interface Course {
   id: string;
   title: string;
@@ -54,7 +64,25 @@ const { course } = Astro.props;
 // 4. Función de respaldo para SSR
 async function fetchCourse(): Promise<Course | null> {
   const snapshot = await get(child(ref(database), `/${id}`));
-  return snapshot.exists() ? { id, ...snapshot.val() } : null;
+  const data = snapshot.val();
+
+  if (!data || typeof data !== "object") return null;
+
+  // Normaliza los datos para asegurar que todas las propiedades existan
+  return {
+    id,
+    title: data.title || "Título desconocido",
+    description: data.description || "Descripción no disponible",
+    image: data.image || "/default-image.jpg", // Reemplaza con una imagen predeterminada
+    category: data.category || "Categoría desconocida",
+    price: typeof data.price === "number" ? data.price : 0, // Asegura que el precio sea un número
+    duration: data.duration || "Duración no especificada",
+    level: data.level || "Nivel no especificado",
+    instructor: data.instructor || "Instructor desconocido",
+    url: data.url || "#",
+    reviews: Array.isArray(data.reviews) ? data.reviews : [], // Asegura que reviews sea un array
+    likes: typeof data.likes === "number" ? data.likes : 0, // Asegura que likes sea un número
+  };
 }
 
 // 5. Cargar datos si no vienen pre-renderizados
@@ -79,21 +107,19 @@ const courseData = course || (await fetchCourse());
                   decoding="async"
                 />
               </div>
-
               <div class="flex flex-col gap-4">
                 {/* Botones alineados */}
                 <CourseDialog client:load courseId={courseData.id} />
                 <AddToCartButton client:load course={courseData} />
               </div>
-
               <div class="bg-gray-50 p-4 rounded-lg text-center">
                 <p class="text-sm text-gray-500">Valoración promedio</p>
                 <p class="text-2xl font-bold text-yellow-500">
-                  {courseData.reviews.length > 0
+                  {Array.isArray(courseData.reviews) && courseData.reviews.length > 0
                     ? (
                         courseData.reviews.reduce(
                           (acc: number, review: Review) =>
-                            acc + review.rating,
+                            acc + (typeof review.rating === "number" ? review.rating : 0),
                           0
                         ) / courseData.reviews.length
                       ).toFixed(1)
@@ -102,7 +128,6 @@ const courseData = course || (await fetchCourse());
                 </p>
               </div>
             </div>
-
             {/* Contenido principal */}
             <div class="md:w-2/3 space-y-6">
               <header>
@@ -121,7 +146,6 @@ const courseData = course || (await fetchCourse());
                   {courseData.description}
                 </p>
               </header>
-
               {/* Detalles del curso */}
               <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-gray-50 p-4 rounded-lg">
@@ -131,7 +155,9 @@ const courseData = course || (await fetchCourse());
                 <div class="bg-gray-50 p-4 rounded-lg">
                   <p class="text-sm text-gray-500">Precio</p>
                   <p class="font-medium text-gray-800">
-                    {courseData.price.toFixed(2)}€
+                    {typeof courseData.price === "number"
+                      ? `${courseData.price.toFixed(2)}€`
+                      : "Precio no disponible"}
                   </p>
                 </div>
                 <div class="bg-gray-50 p-4 rounded-lg">
@@ -144,31 +170,31 @@ const courseData = course || (await fetchCourse());
                   <LikeButton client:load courseId={courseData.id} />
                 </div>
               </div>
-
               {/* Reseñas */}
               <section>
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">
-                  Reseñas ({courseData.reviews.length})
+                  Reseñas ({courseData.reviews?.length || 0})
                 </h2>
                 <div class="space-y-4">
-                  {courseData.reviews?.map((review: Review, index: number) => (
-                    <div key={index} class="bg-gray-50 p-4 rounded-lg">
-                      <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-2">
-                          <span class="font-medium text-gray-800">
-                            {review.user}
-                          </span>
-                          <span class="text-yellow-500 text-sm">
-                            {"★".repeat(review.rating)}
+                  {Array.isArray(courseData.reviews) &&
+                    courseData.reviews.map((review: Review, index: number) => (
+                      <div key={index} class="bg-gray-50 p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                          <div class="flex items-center gap-2">
+                            <span class="font-medium text-gray-800">
+                              {review.user || "Usuario desconocido"}
+                            </span>
+                            <span class="text-yellow-500 text-sm">
+                              {"★".repeat(typeof review.rating === "number" ? review.rating : 0)}
+                            </span>
+                          </div>
+                          <span class="text-sm text-gray-500">
+                            {new Date().toLocaleDateString()}
                           </span>
                         </div>
-                        <span class="text-sm text-gray-500">
-                          {new Date().toLocaleDateString()}
-                        </span>
+                        <p class="text-gray-600">{review.comment || "Sin comentario"}</p>
                       </div>
-                      <p class="text-gray-600">{review.comment}</p>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </section>
             </div>
@@ -179,7 +205,7 @@ const courseData = course || (await fetchCourse());
       <div class="text-center py-20">
         <h1 class="text-2xl font-bold text-red-500">Curso no encontrado</h1>
         <p class="text-gray-600 mt-4">
-          El curso solicitado no existe o fue eliminado
+          El curso solicitado no existe o fue eliminado.
         </p>
       </div>
     )
