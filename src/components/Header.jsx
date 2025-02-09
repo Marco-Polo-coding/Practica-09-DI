@@ -6,7 +6,7 @@ import RegisterDialog from "./RegisterDialog";
 import UserDialog from "./UserDialog";
 import LogoutConfirmationDialog from "./LogoutConfirmationDialog";
 import CartDialog from "./CartDialog";
-import { ref, onValue } from "firebase/database";
+import { ref, onValue, get } from "firebase/database";
 import database from "../../firebaseConfig";
 
 const Header = () => {
@@ -14,6 +14,7 @@ const Header = () => {
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [loggedInUser, setLoggedInUser] = useState(null);
+  const [userData, setUserData] = useState(null); // Datos del usuario actual
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showRegisterDialog, setShowRegisterDialog] = useState(false);
   const [showUserDialog, setShowUserDialog] = useState(false);
@@ -26,7 +27,10 @@ const Header = () => {
   // Cargar usuario logueado desde localStorage
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("loggedInUser"));
-    if (user) setLoggedInUser(user.email);
+    if (user) {
+      setLoggedInUser(user.email);
+      fetchUserData(user.email);
+    }
   }, []);
 
   // Cargar cursos desde Firebase
@@ -34,11 +38,12 @@ const Header = () => {
     const coursesRef = ref(database, "/");
     const unsubscribe = onValue(coursesRef, (snapshot) => {
       const data = snapshot.val();
-      if (data) setCourses(Object.values(data));
+      if (data) setCourses(Object.values(data).filter(course => course?.title)); // Solo incluir cursos válidos
     });
     return () => unsubscribe();
   }, []);
 
+  // Manejar búsqueda
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
@@ -53,9 +58,21 @@ const Header = () => {
     }
   };
 
+  // Obtener datos del usuario desde Firebase
+  const fetchUserData = async (email) => {
+    const userRef = ref(database, `users/${email.replace(/\./g, ",")}`);
+    const snapshot = await get(userRef);
+    if (snapshot.exists()) {
+      setUserData(snapshot.val());
+    } else {
+      console.warn("Usuario no encontrado en Firebase");
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("loggedInUser");
     setLoggedInUser(null);
+    setUserData(null);
     setShowUserDialog(false);
     setShowLogoutDialog(false);
   };
@@ -160,19 +177,26 @@ const Header = () => {
       {showLoginDialog && (
         <LoginDialog
           onClose={() => setShowLoginDialog(false)}
-          onLogin={(email) => setLoggedInUser(email)}
+          onLogin={(email) => {
+            setLoggedInUser(email);
+            fetchUserData(email);
+          }}
         />
       )}
       {showRegisterDialog && (
         <RegisterDialog
           onClose={() => setShowRegisterDialog(false)}
-          onRegister={(email) => setLoggedInUser(email)}
+          onRegister={(email) => {
+            setLoggedInUser(email);
+            fetchUserData(email);
+          }}
         />
       )}
       {showUserDialog && (
         <UserDialog
           onClose={() => setShowUserDialog(false)}
           userEmail={loggedInUser}
+          userData={userData}
         />
       )}
       {showLogoutDialog && (

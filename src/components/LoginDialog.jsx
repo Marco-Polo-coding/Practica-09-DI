@@ -1,5 +1,7 @@
 // src/components/LoginDialog.jsx
 import { useState } from "react";
+import { ref, get, child } from "firebase/database";
+import database from "../../firebaseConfig";
 
 const LoginDialog = ({ onClose, onLogin }) => {
   const [email, setEmail] = useState("");
@@ -7,37 +9,46 @@ const LoginDialog = ({ onClose, onLogin }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       setErrorMessage("Por favor, completa todos los campos.");
       return;
     }
 
-    // Obtener usuarios registrados desde localStorage
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find(
-      (user) => user.email === email && user.password === password
-    );
+    try {
+      // Obtener usuarios desde Firebase
+      const usersRef = ref(database, "users");
+      const snapshot = await get(usersRef);
+      const usersData = snapshot.exists() ? snapshot.val() : {};
 
-    if (!user) {
-      setErrorMessage("Correo o contraseña incorrectos.");
-      return;
-    }
+      // Buscar al usuario que coincida con el correo y la contraseña
+      const user = Object.values(usersData).find(
+        (user) => user.email === email && user.password === password
+      );
 
-    // Guardar sesión en localStorage
-    localStorage.setItem("loggedInUser", JSON.stringify(user));
+      if (!user) {
+        setErrorMessage("Correo o contraseña incorrectos.");
+        return;
+      }
 
-    // Llamar a la función callback para actualizar el estado en el Header
-    onLogin(user.email);
+      // Guardar sesión en localStorage
+      localStorage.setItem("loggedInUser", JSON.stringify(user));
 
-    setSuccessMessage("Inicio de sesión exitoso. ¡Bienvenido!");
-    setTimeout(() => {
-      setSuccessMessage("");
-      onClose(); // Cerrar el diálogo tras mostrar el mensaje de éxito
+      // Llamar a la función callback para actualizar el estado en el Header
+      onLogin(user.email);
+
+      setSuccessMessage("Inicio de sesión exitoso. ¡Bienvenido!");
       setTimeout(() => {
-        window.location.reload(); // Recargar la página actual
-      }, 100); // Asegurar que la recarga ocurra después del cierre
-    }, 1000);
+        setSuccessMessage("");
+        onClose(); // Cerrar el diálogo tras mostrar el mensaje de éxito
+        setTimeout(() => {
+          window.location.reload(); // Recargar la página actual
+        }, 100); // Asegurar que la recarga ocurra después del cierre
+      }, 1000);
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error);
+      setErrorMessage("Hubo un problema al iniciar sesión. Inténtalo más tarde.");
+    }
   };
 
   return (

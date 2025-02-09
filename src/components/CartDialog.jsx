@@ -1,6 +1,8 @@
 // src/components/CartDialog.jsx
 import { useState } from "react";
 import useCartStore from "../store/cartStore"; // Importar el store
+import { ref, update, get } from "firebase/database";
+import database from "../../firebaseConfig";
 
 const CartDialog = ({ onClose }) => {
   const cartItems = useCartStore((state) => state.cartItems); // Obtener items del carrito
@@ -16,8 +18,39 @@ const CartDialog = ({ onClose }) => {
       return;
     }
 
+    // Obtener el usuario logueado desde localStorage
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (!loggedInUser || !loggedInUser.email) {
+      setShowErrorDialog(true);
+      return;
+    }
+
     try {
-      // Simula el guardado en Firebase o backend
+      // Referencia al nodo de usuarios en Firebase
+      const userRef = ref(database, `users/${loggedInUser.email.replace(/\./g, ",")}`);
+      const snapshot = await get(userRef);
+
+      if (!snapshot.exists()) {
+        console.error("El usuario no existe en Firebase.");
+        setShowErrorDialog(true);
+        return;
+      }
+
+      const userData = snapshot.val();
+      const purchasedCourses = userData.purchasedCourses || [];
+
+      // Agregar los cursos del carrito a los cursos comprados
+      const updatedPurchasedCourses = [
+        ...new Set([...purchasedCourses, ...cartItems.map((item) => item.id)]),
+      ];
+
+      // Actualizar los datos del usuario en Firebase
+      await update(userRef, { purchasedCourses: updatedPurchasedCourses });
+
+      // Actualizar el usuario logueado en localStorage
+      const updatedUser = { ...loggedInUser, purchasedCourses: updatedPurchasedCourses };
+      localStorage.setItem("loggedInUser", JSON.stringify(updatedUser));
+
       setShowSuccessDialog(true);
       clearCart();
     } catch (error) {
@@ -116,7 +149,7 @@ const CartDialog = ({ onClose }) => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white rounded-lg shadow-lg max-w-sm w-full p-6 text-center">
             <p className="text-lg font-medium text-red-600 mb-4">
-              No hay cursos en el carrito.
+              No hay cursos en el carrito o no has iniciado sesión.
             </p>
             <button
               onClick={() => setShowErrorDialog(false)}
