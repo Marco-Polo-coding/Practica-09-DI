@@ -1,13 +1,20 @@
-// src/components/LogoutConfirmationDialog.jsx
+import useCurrencyStore from "../store/currencyStore"; // Importar Zustand para manejar la moneda
+
 const LogoutConfirmationDialog = ({ onConfirm, onCancel }) => {
+  const { setCurrency } = useCurrencyStore(); // Acceder al store de moneda
+
   const handleConfirm = () => {
     // Eliminar la sesión del usuario del localStorage
     localStorage.removeItem("loggedInUser");
 
+    // Restablecer la moneda a EUR y eliminarla del localStorage
+    setCurrency("EUR"); // Actualizar Zustand
+    localStorage.removeItem("currency"); // Asegurar que no persista en localStorage
+
     // Ejecutar la función callback proporcionada
     onConfirm();
 
-    // Recargar la página actual
+    // Recargar la página actual para aplicar los cambios
     setTimeout(() => {
       window.location.reload();
     }, 100); // Breve retraso para garantizar la ejecución de lógica previa
@@ -21,13 +28,13 @@ const LogoutConfirmationDialog = ({ onConfirm, onCancel }) => {
         <div className="flex justify-end space-x-4">
           <button
             onClick={onCancel}
-            className="py-2 px-4 bg-gray-300 rounded-lg hover:bg-gray-400"
+            className="py-2 px-4 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
           >
             Cancelar
           </button>
           <button
             onClick={handleConfirm}
-            className="py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            className="py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
           >
             Confirmar
           </button>

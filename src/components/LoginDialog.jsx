@@ -1,13 +1,15 @@
-// src/components/LoginDialog.jsx
+// src/components/CurrencySelector.jsx
 import { useState } from "react";
-import { ref, get, child } from "firebase/database";
+import { ref, get } from "firebase/database";
 import database from "../../firebaseConfig";
+import useCurrencyStore from "../store/currencyStore"; // Importar Zustand para manejar la moneda
 
 const LoginDialog = ({ onClose, onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const { setCurrency } = useCurrencyStore(); // Acceder al store de moneda
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -34,6 +36,11 @@ const LoginDialog = ({ onClose, onLogin }) => {
       // Guardar sesión en localStorage
       localStorage.setItem("loggedInUser", JSON.stringify(user));
 
+      // Aplicar la moneda del usuario si tiene una preferencia guardada
+      const userCurrency = user.currency || "EUR"; // Moneda por defecto EUR si no hay preferencia
+      setCurrency(userCurrency); // Actualizar Zustand
+      localStorage.setItem("currency", userCurrency); // Guardar en localStorage para persistencia
+
       // Llamar a la función callback para actualizar el estado en el Header
       onLogin(user.email);
 
@@ -42,7 +49,7 @@ const LoginDialog = ({ onClose, onLogin }) => {
         setSuccessMessage("");
         onClose(); // Cerrar el diálogo tras mostrar el mensaje de éxito
         setTimeout(() => {
-          window.location.reload(); // Recargar la página actual
+          window.location.reload(); // Recargar la página para reflejar los cambios de moneda
         }, 100); // Asegurar que la recarga ocurra después del cierre
       }, 1000);
     } catch (error) {
@@ -87,13 +94,13 @@ const LoginDialog = ({ onClose, onLogin }) => {
         <div className="mt-6 flex justify-end gap-4">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
           >
             Cancelar
           </button>
           <button
             onClick={handleLogin}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             Iniciar Sesión
           </button>

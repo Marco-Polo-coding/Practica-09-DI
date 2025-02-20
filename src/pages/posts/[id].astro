@@ -1,12 +1,12 @@
 ---
-// src/pages/posts/[id].astro
 import Layout from "../../layouts/Layout.astro";
-import { getDatabase, ref, child, get } from "firebase/database";
+import { ref, child, get } from "firebase/database";
 import database from "../../../firebaseConfig";
 import Header from "../../components/Header";
 import CourseDialog from "../../components/CourseDialog.jsx";
 import LikeButton from "../../components/LikeButton.jsx";
 import AddToCartButton from "../../components/AddToCart.jsx";
+import CoursePrice from "../../components/CoursePrice.jsx";
 
 // 1. Generar rutas estáticas
 export async function getStaticPaths() {
@@ -14,7 +14,6 @@ export async function getStaticPaths() {
   const snapshot = await get(child(dbRef, "/"));
   const courses = snapshot.val() || {};
 
-  // Filtrar solo IDs válidos (excluir claves como "users")
   return Object.keys(courses)
     .filter((id) => {
       const course = courses[id];
@@ -68,20 +67,19 @@ async function fetchCourse(): Promise<Course | null> {
 
   if (!data || typeof data !== "object") return null;
 
-  // Normaliza los datos para asegurar que todas las propiedades existan
   return {
     id,
     title: data.title || "Título desconocido",
     description: data.description || "Descripción no disponible",
-    image: data.image || "/default-image.jpg", // Reemplaza con una imagen predeterminada
+    image: data.image || "/default-image.jpg",
     category: data.category || "Categoría desconocida",
-    price: typeof data.price === "number" ? data.price : 0, // Asegura que el precio sea un número
+    price: typeof data.price === "number" ? data.price : 0,
     duration: data.duration || "Duración no especificada",
     level: data.level || "Nivel no especificado",
     instructor: data.instructor || "Instructor desconocido",
     url: data.url || "#",
-    reviews: Array.isArray(data.reviews) ? data.reviews : [], // Asegura que reviews sea un array
-    likes: typeof data.likes === "number" ? data.likes : 0, // Asegura que likes sea un número
+    reviews: Array.isArray(data.reviews) ? data.reviews : [],
+    likes: typeof data.likes === "number" ? data.likes : 0,
   };
 }
 
@@ -155,9 +153,7 @@ const courseData = course || (await fetchCourse());
                 <div class="bg-gray-50 p-4 rounded-lg">
                   <p class="text-sm text-gray-500">Precio</p>
                   <p class="font-medium text-gray-800">
-                    {typeof courseData.price === "number"
-                      ? `${courseData.price.toFixed(2)}€`
-                      : "Precio no disponible"}
+                    <CoursePrice client:load price={courseData.price} />
                   </p>
                 </div>
                 <div class="bg-gray-50 p-4 rounded-lg">

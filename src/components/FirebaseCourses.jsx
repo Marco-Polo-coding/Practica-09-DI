@@ -2,8 +2,11 @@
 import { useState, useEffect } from "react";
 import { ref, onValue } from "firebase/database";
 import database from "../../firebaseConfig";
-import AddToCartButton from "../components/AddToCart.jsx"; // Importamos el botón de carrito
-import useUserStore from "../store/userStore"; // Importar el store de usuario
+import AddToCartButton from "../components/AddToCart.jsx"; // Botón de carrito
+import useUserStore from "../store/userStore"; // Store de usuario
+import useCurrencyStore from "../store/currencyStore"; // Store de moneda
+import { convertPrice } from "../utils/currencyUtils"; // Conversión de moneda
+import CoursePrice from "./CoursePrice.jsx";
 
 const FirebaseCourses = () => {
   const [courses, setCourses] = useState([]);
@@ -12,7 +15,8 @@ const FirebaseCourses = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
 
-  const purchasedCourses = useUserStore((state) => state.purchasedCourses); // Cursos comprados
+  const purchasedCourses = useUserStore((state) => state.purchasedCourses);
+  const { currency } = useCurrencyStore(); // Obtener moneda global
 
   // Carga de cursos desde Firebase
   useEffect(() => {
@@ -22,13 +26,11 @@ const FirebaseCourses = () => {
       if (data) {
         const coursesArray = Object.entries(data)
           .map(([id, course]) => ({ id, ...course }))
-          .filter((course) => course.title && course.image); // Filtrar cursos con datos válidos
+          .filter((course) => course.title && course.image); // Filtrar cursos válidos
         setCourses(coursesArray);
 
         // Extraer categorías únicas
-        const uniqueCategories = [
-          ...new Set(coursesArray.map((course) => course.category)),
-        ];
+        const uniqueCategories = [...new Set(coursesArray.map((course) => course.category))];
         setCategories(uniqueCategories.sort());
       }
       setLoading(false);
@@ -38,62 +40,51 @@ const FirebaseCourses = () => {
 
   // Leer filtros desde la URL al cargar la página
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const categoryFromUrl = url.searchParams.get("category");
-    const levelFromUrl = url.searchParams.get("level");
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryFromUrl = urlParams.get("category");
+    const levelFromUrl = urlParams.get("level");
 
-    if (categoryFromUrl) {
-      setSelectedCategory(categoryFromUrl);
-    }
-    if (levelFromUrl) {
-      setSelectedLevel(levelFromUrl);
-    }
+    if (categoryFromUrl) setSelectedCategory(categoryFromUrl);
+    if (levelFromUrl) setSelectedLevel(levelFromUrl);
   }, []);
 
-  // Manejar cambio de categoría
+  // Manejar filtros dinámicamente y actualizar URL
+  const updateFilters = (param, value) => {
+    const url = new URL(window.location.href);
+    if (value) {
+      url.searchParams.set(param, value);
+    } else {
+      url.searchParams.delete(param);
+    }
+    window.history.pushState({}, "", url);
+  };
+
+  // Cambiar categoría
   const handleCategoryChange = (e) => {
-    const category = e.target.value;
-    const url = new URL(window.location.href);
-    if (category) {
-      url.searchParams.set("category", category);
-      setSelectedCategory(category);
-    } else {
-      url.searchParams.delete("category");
-      setSelectedCategory("");
-    }
-    window.history.pushState({}, "", url);
+    setSelectedCategory(e.target.value);
+    updateFilters("category", e.target.value);
   };
 
-  // Manejar cambio de nivel
+  // Cambiar nivel
   const handleLevelChange = (e) => {
-    const level = e.target.value;
-    const url = new URL(window.location.href);
-    if (level) {
-      url.searchParams.set("level", level);
-      setSelectedLevel(level);
-    } else {
-      url.searchParams.delete("level");
-      setSelectedLevel("");
-    }
-    window.history.pushState({}, "", url);
+    setSelectedLevel(e.target.value);
+    updateFilters("level", e.target.value);
   };
 
-  // Manejar reinicio de filtros
+  // Resetear filtros
   const handleResetFilters = () => {
+    setSelectedCategory("");
+    setSelectedLevel("");
     const url = new URL(window.location.href);
     url.searchParams.delete("category");
     url.searchParams.delete("level");
     window.history.pushState({}, "", url);
-
-    setSelectedCategory("");
-    setSelectedLevel("");
   };
 
-  // Filtrar cursos por categoría y nivel
+  // Filtrar cursos según la categoría y nivel seleccionados
   const filteredCourses = courses.filter((course) => {
-    const categoryMatch = !selectedCategory || course.category === selectedCategory;
-    const levelMatch = !selectedLevel || course.level === selectedLevel;
-    return categoryMatch && levelMatch;
+    return (!selectedCategory || course.category === selectedCategory) &&
+           (!selectedLevel || course.level === selectedLevel);
   });
 
   if (loading) {
@@ -114,9 +105,7 @@ const FirebaseCourses = () => {
           >
             <option value="">Todas las categorías</option>
             {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
+              <option key={category} value={category}>{category}</option>
             ))}
           </select>
         </div>
@@ -133,14 +122,12 @@ const FirebaseCourses = () => {
           </select>
         </div>
 
-        <div>
-          <button
-            onClick={handleResetFilters}
-            className="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Resetear Filtros
-          </button>
-        </div>
+        <button
+          onClick={handleResetFilters}
+          className="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Resetear Filtros
+        </button>
       </div>
 
       {/* Lista de cursos */}
@@ -175,7 +162,7 @@ const FirebaseCourses = () => {
               <p className="text-gray-600 mb-4">{course.description}</p>
               <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-4">
                 <span>🕒 {course.duration}</span>
-                <span>💵 {course.price}€</span>
+                <span>💵 <CoursePrice price={course.price} /></span>
                 <span>❤️ {course.likes}</span>
               </div>
               <a

@@ -8,6 +8,7 @@ import LogoutConfirmationDialog from "./LogoutConfirmationDialog";
 import CartDialog from "./CartDialog";
 import { ref, onValue, get } from "firebase/database";
 import database from "../../firebaseConfig";
+import CurrencySelector from "./CurrencySelector";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -133,6 +134,9 @@ const Header = () => {
             </span>
           )}
         </div>
+
+        {/* Selector de moneda
+        <CurrencySelector userEmail={loggedInUser} /> */}
 
         {/* Botones de sesión */}
         <div className="flex items-center space-x-4">
