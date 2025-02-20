@@ -1,5 +1,7 @@
 import { useState } from "react";
-import useCartStore from "../store/cartStore"; // Importar el store
+import useCartStore from "../store/cartStore"; // Importar el store del carrito
+import useCurrencyStore from "../store/currencyStore"; // Importar el store de moneda
+import { convertPrice } from "../utils/currencyUtils"; // Función para convertir moneda
 import { ref, update, get } from "firebase/database";
 import database from "../../firebaseConfig";
 
@@ -7,6 +9,8 @@ const CartDialog = ({ onClose }) => {
   const cartItems = useCartStore((state) => state.cartItems); // Obtener items del carrito
   const removeFromCart = useCartStore((state) => state.removeFromCart); // Hook para eliminar
   const clearCart = useCartStore((state) => state.clearCart); // Hook para limpiar carrito
+
+  const { currency } = useCurrencyStore(); // Obtener la moneda seleccionada del store
 
   const [showSuccessDialog, setShowSuccessDialog] = useState(false); // Estado para el diálogo de éxito
   const [showErrorDialog, setShowErrorDialog] = useState(false); // Estado para el diálogo de error
@@ -76,7 +80,10 @@ const CartDialog = ({ onClose }) => {
                 <div className="flex-1">
                   <h3 className="font-medium text-gray-800">{item.title}</h3>
                   <p className="text-gray-600 text-sm">{item.description}</p>
-                  <p className="text-gray-800 font-semibold">💵 {item.price.toFixed(2)}€</p>
+                  {/* Mostrar el precio convertido a la moneda seleccionada */}
+                  <p className="text-gray-800 font-semibold">
+                    💵 {convertPrice(item.price, currency)} {currency}
+                  </p>
                 </div>
                 {/* Botón para eliminar */}
                 <button
